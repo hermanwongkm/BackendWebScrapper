@@ -1,6 +1,6 @@
 const cheerio = require("cheerio");
 const Nightmare = require("nightmare");
-const nightmare = Nightmare({ show: true });
+const nightmare = Nightmare({ show: false });
 cheerioTableparser = require("cheerio-tableparser");
 var cors = require("cors");
 
@@ -9,7 +9,7 @@ var app = express();
 app.use(cors());
 const port = 3001;
 app.listen(port, () =>
-  console.log("The server is currently listening on: " + port)
+  console.log("The server is currently listening on: " + port + "new")
 );
 
 async function getBody(parameter) {
@@ -37,6 +37,7 @@ extractTable = body => {
     // console.log(heading[6],suffix[6],description[6]);
     var i;
     var results = [];
+    var csv = [];
 
     //[0.1] Replace empty string with parent or default "00" for suffix
     let previous = "ERR";
@@ -56,8 +57,12 @@ extractTable = body => {
         suffix: suffix[i],
         description: description[i]
       });
+      csv.push({
+        hts_code: String(heading[i]) + "." + suffix[i],
+        description: description[i]
+      });
     }
-    return results;
+    return { results, csv };
   }
 };
 
@@ -65,8 +70,8 @@ app.get("/test/:search", async function(req, res) {
   console.log(req.params.search);
   let query = req.params.search;
   var body = await getBody(query);
-  extractedTable = extractTable(body);
-  res.send(extractedTable);
+  const { results, csv } = extractTable(body); //Object deconstruction
+  res.send([results, csv]);
 });
 
 // const cheerio = require("cheerio");
