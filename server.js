@@ -5,6 +5,45 @@ const nightmare = Nightmare({ show: true });
 const spawn = require("child_process").spawn;
 const csvtojson = require("csvtojson");
 
+// MongoDB requirements and variables.
+var mongoose = require("mongoose");
+// mongoose.Promise = global.Promise;
+//
+var serverAdr = "localhost:27017",
+  dbName = "hts";
+mongoose.connect(`mongodb://${serverAdr}/${dbName}`, { useNewUrlParser: true });
+mongoose.connection.on("error", function(err) {
+  if (err) throw err;
+});
+mongoose.set("useCreateIndex", true);
+
+const htsSchema = new mongoose.Schema({
+  0: String,
+  1: String,
+  2: String,
+  3: String,
+  4: String,
+  5: String,
+  6: String,
+  7: String,
+  8: String,
+  9: String
+});
+const Record = mongoose.model("hts_codes", htsSchema);
+var example = {
+  "0": "0105.94.00.00",
+  "1": "2",
+  "2": "falcon",
+  "3": '["No.","kg"]',
+  "4": "2¢/kg",
+  "5": "Free (A+,AU,BH, CA,CL,CO,D,E,IL,JO,KR,MA,MX, OM,P,PA,PE,SG)",
+  "6": "17.6¢/kg",
+  "7": "",
+  "8": "",
+  "9": "['Duck']"
+};
+let r = new Record(example);
+
 /**
  * getUpdated calls for web automation tool to download the latest csv file.
  */
@@ -40,11 +79,10 @@ fetch = async () => {
         console.log(String(data));
         converted = await convertCSV();
         console.log("[3] Successfully convert .csv to JSON");
-        console.log(converted);
       });
     });
   return true;
 };
-
+r.save();
 console.log("[0] Nightmare is running... \n [0.1] Mining hts.usitc.gov ...");
 fetch();
